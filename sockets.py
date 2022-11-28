@@ -88,7 +88,8 @@ def hello():
     # Code taken from assignment 4
     return flask.send_from_directory("static", "index.html")
 
-# Code below is taken from CMPUT404 example code (from websocket lectures)
+# Code below was taken from CMPUT404 example code (from websocket lectures) +
+# suggested by Landberg (stated in readme) and some is original.
 def read_ws(ws, client):
     '''A greenlet function that reads from the websocket'''
     try:
@@ -97,11 +98,11 @@ def read_ws(ws, client):
             print("WS RECV: %s" % msg)
             if (msg is not None):
                 packet = json.loads(msg)
-                if("entity" in packet and "data" in packet):
-                    myWorld.space[packet["entity"]] = packet["data"]
-                    myWorld.set("entity", "data")
                 for client in clients:
                     client.put(json.dumps(packet))
+                if("entity" in packet and "data" in packet):
+                    myWorld.space[packet["entity"]] = packet["data"]
+                    myWorld.set(packet["entity"], packet["data"])
             else:
                 break
     except:

@@ -135,10 +135,13 @@ function getPosition(e) {
 	}
 }
 
+/** 
+ * Code below suggested by landberg (not given code, but suggested 
+ * on to proceed). 
+*/ 
 function addEntity(entity, data) {
     world[entity] = data;
-    socket.send(JSON.stringify(new_world));
-    drawNextFrame(); // (but should we?)
+    socket.send(JSON.stringify(world));
 }
 
 var counter = 0;
@@ -275,10 +278,16 @@ function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
     socket = new WebSocket(url);
     socket.onopen = function() {
-        // use fetch to get current state of the world and chaining promise (open socket, get world and then process that world)
-        fetch("/world")
+        /**
+         * use fetch to get current state of the world and then turning that response
+         * into a JSON format. We then chain that promise so when its done, we can set
+         * the current world to the response and draw the next frame.
+        */
+         fetch("/world")
             .then((response) => {
-                world = JSON.parse(response);
+                return response.json()
+            }).then((response) => {
+                world = response;
                 drawNextFrame();
             })
         drawFrame()
@@ -288,24 +297,21 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
-            debug("WebSocket Recv:" + msg.data);
-            // Code below is taken from CMPUT404 example code (from websocket lectures) 
+            // debug("WebSocket Recv:" + msg.data);
+            /** 
+             * We first parse the message data (which is the state of the world)
+             * to get the right format. We then set the world so we can draw that 
+             * message (current state) onto the canvas
+            */
             var message = JSON.parse(msg.data);
-            addMessage(message["msg"]);   
-            drawNextFrame();       
+            // console.log("This is my message: ",  message)
+            world = message
+            drawNextFrame()
         } catch (e) {
             alert("socket on message: " + e);
         }
     }; 
 }
-
-// Code below is taken from CMPUT404 example code (from websocket lectures)
-function addMessage(msg) {
-    var msgDiv = document.createElement("span");
-    msgDiv.className = "msg";
-    msgDiv.appendChild(new Text(msg));
-    queue.insertBefore(msgDiv, queue.childNodes[0]);
-};
 
 wsSetup();
 
