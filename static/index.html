@@ -43,21 +43,35 @@ function debug(str) {
 debug("Test");
 
 world = {};
+//Code taken from assignment 4
+    function drawCircle(context, entity) {
+        with (context) {
+            beginPath();
+            if (entity['radius'] === 30) {
+                lineWidth = 20;
+                innerRadius = 5;
+                outerRadius = 30;
+            } else {
+                lineWidth = 10;
+                innerRadius = 1;
+                outerRadius = 13;
+            }
+            var x = entity["x"];
+            var y = entity["y"];
+            // Radius of the entire circle.
+            radius = entity["radius"];
 
-//XXX: TODO Make this prettier!
-function drawCircle(context,entity) {
-    with(context) {
-        beginPath();                
-        lineWidth = 3;
-        var x = entity["x"];
-        var y = entity["y"];
-        //moveTo(x,y);
-        fillStyle = entity["colour"];
-        strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
-        stroke();                                
+            //moveTo(x,y);
+            var gradient = context.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+            gradient.addColorStop(0, 'white');
+            gradient.addColorStop(1, entity["colour"]);
+            fillStyle = gradient;
+            strokeStyle = fillStyle;
+            arc(x, y, (entity["radius"]) ? entity["radius"] : 5, 0, 2.0 * Math.PI, false);
+            stroke();
+            fill()
+        }
     }
-}
 
 function prepEntity(entity) {
     if (!entity["colour"]) {
@@ -123,9 +137,10 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
+    socket.send(JSON.stringify(new_world));
     drawNextFrame(); // (but should we?)
-    //XXX: Send a XHTML Request that updates the entity you just modified!
 }
+
 var counter = 0;
 function addEntityWithoutName(data) {
     var name = "X"+(counter++)%100;
@@ -229,23 +244,30 @@ mouse = (function() {
 })();
 
 // Add the application specific mouse listeners!
-//XXX: TODO Make these prettier!
-mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+// Code taken from assignment 4
+mouse.mousedowners.push(function (x, y, clicked, e) {
+    addEntityWithoutName({ 'x': x, 'y': y, 'colour': 'blue', 'radius': 30 });
 });
 
-mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+mouse.mouseuppers.push(function (x, y, clicked, e) {
+    addEntityWithoutName({ 'x': x, 'y': y, 'colour': '#FF10F0', 'radius': 30 });
 });
 
-mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+colour = '';
+index = -1;
+mouse.mousedraggers.push(function (x, y, clicked, e) {
+    addEntityWithoutName({ 'x': x, 'y': y, 'colour': colour, 'radius': 10 });
 });
-
 
 function update() {
     drawFrame();
+    // Code taken from assignment 4
+    colours = ["red", "orange", "yellow", "blue", "green", "#4B0082", "#8F00FF"]
+    if (index === 7) {
+        index = -1;
+    }
+    index += 1;
+    colour = colours[index]
 }
 
 
@@ -253,7 +275,13 @@ function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
     socket = new WebSocket(url);
     socket.onopen = function() {
-        //XXX: TODO What are you going to do here?
+        // use fetch to get current state of the world and chaining promise (open socket, get world and then process that world)
+        fetch("/world")
+            .then((response) => {
+                world = JSON.parse(response);
+                drawNextFrame();
+            })
+        drawFrame()
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,22 +289,30 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            // Code below is taken from CMPUT404 example code (from websocket lectures) 
+            var message = JSON.parse(msg.data);
+            addMessage(message["msg"]);   
+            drawNextFrame();       
         } catch (e) {
             alert("socket on message: " + e);
         }
     }; 
 }
 
+// Code below is taken from CMPUT404 example code (from websocket lectures)
+function addMessage(msg) {
+    var msgDiv = document.createElement("span");
+    msgDiv.className = "msg";
+    msgDiv.appendChild(new Text(msg));
+    queue.insertBefore(msgDiv, queue.childNodes[0]);
+};
+
 wsSetup();
-
-
-
 
 // 30 frames per second
 setInterval( update, 1000/30.0);
 
 
-    </script>
+</script>
 </body>
 </html>
