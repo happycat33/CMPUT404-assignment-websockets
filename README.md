@@ -68,7 +68,7 @@ Contributors
 Code
 =====
 
-* Most code for sockets.py came from CMPUT 404 lecture 
-  * links: https://uofa-cmput404.github.io/cmput404-slides/09-Websockets.html#/25, https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/WebSocketsExamples
+* Most code for sockets.py came from CMPUT 404 lecture (Author: Abram Hindle)
+  * links: https://uofa-cmput404.github.io/cmput404-slides/09-Websockets.html#/25 (Author: Abram Hindle), https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/WebSocketsExamples (Author: Abram Hindle)
 * Some code (mostly for the design of the canvas and circles) came from my assignment 4 code
   * links: https://github.com/happycat33/CMPUT404-assignment-ajax

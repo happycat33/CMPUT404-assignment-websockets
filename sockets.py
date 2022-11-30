@@ -28,7 +28,7 @@ app.debug = True
 
 clients = list()
 
-# Code below is taken from CMPUT404 example code (from websocket lectures)
+# Code below is taken from CMPUT404 example code (from websocket lectures) (more details in readme)
 class Client:
     def __init__(self):
         self.queue = queue.Queue()
