@@ -56,6 +56,19 @@ POSSIBILITY OF SUCH DAMAGE.
 Contributors
 ============
 
-* Mark Galloway
-* Abram Hindle
-* Cole Mackenzie
+* Landberg: helped me figure out how to set up read_ws to set the current
+  state of the world. Also help me figure out what to do with addEntity (just suggestions
+  on how to implement it), socket.onOpen (one line of code given, but most based on suggestion)
+  and socket.onMessage (help with suggestion and clarify issue i was having).
+* rmo1: Explain how sockets.onOpen should work
+* og: Helped me fix my socket.onOpen and socket.onMessage so that it is proper (worked before but was
+  not properly coded). Also helped me fix socket.py so that the current state would show up if new tab
+  was opened (so if something is drawn, it will show up). Helped me fix set_listener and read_ws.
+
+Code
+=====
+
+* Most code for sockets.py came from CMPUT 404 lecture 
+  * links: https://uofa-cmput404.github.io/cmput404-slides/09-Websockets.html#/25, https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/WebSocketsExamples
+* Some code (mostly for the design of the canvas and circles) came from my assignment 4 code
+  * links: https://github.com/happycat33/CMPUT404-assignment-ajax

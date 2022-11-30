@@ -43,35 +43,35 @@ function debug(str) {
 debug("Test");
 
 world = {};
-//Code taken from assignment 4
-    function drawCircle(context, entity) {
-        with (context) {
-            beginPath();
-            if (entity['radius'] === 30) {
-                lineWidth = 20;
-                innerRadius = 5;
-                outerRadius = 30;
-            } else {
-                lineWidth = 10;
-                innerRadius = 1;
-                outerRadius = 13;
-            }
-            var x = entity["x"];
-            var y = entity["y"];
-            // Radius of the entire circle.
-            radius = entity["radius"];
-
-            //moveTo(x,y);
-            var gradient = context.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
-            gradient.addColorStop(0, 'white');
-            gradient.addColorStop(1, entity["colour"]);
-            fillStyle = gradient;
-            strokeStyle = fillStyle;
-            arc(x, y, (entity["radius"]) ? entity["radius"] : 5, 0, 2.0 * Math.PI, false);
-            stroke();
-            fill()
+//Code taken from assignment 4 (more details in readme)
+function drawCircle(context, entity) {
+    with (context) {
+        beginPath();
+        if (entity['radius'] === 30) {
+            lineWidth = 20;
+            innerRadius = 5;
+            outerRadius = 30;
+        } else {
+            lineWidth = 10;
+            innerRadius = 1;
+            outerRadius = 13;
         }
+        var x = entity["x"];
+        var y = entity["y"];
+        // Radius of the entire circle.
+        radius = entity["radius"];
+
+        //moveTo(x,y);
+        var gradient = context.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+        gradient.addColorStop(0, 'white');
+        gradient.addColorStop(1, entity["colour"]);
+        fillStyle = gradient;
+        strokeStyle = fillStyle;
+        arc(x, y, (entity["radius"]) ? entity["radius"] : 5, 0, 2.0 * Math.PI, false);
+        stroke();
+        fill()
     }
+}
 
 function prepEntity(entity) {
     if (!entity["colour"]) {
@@ -137,7 +137,8 @@ function getPosition(e) {
 
 /** 
  * Code below suggested by landberg (not given code, but suggested 
- * on to proceed). 
+ * on to proceed). We update the entity in world with the data and
+ *  send a json string of the world to the websocket. (more details in readme)
 */ 
 function addEntity(entity, data) {
     world[entity] = data;
@@ -264,7 +265,7 @@ mouse.mousedraggers.push(function (x, y, clicked, e) {
 
 function update() {
     drawFrame();
-    // Code taken from assignment 4
+    // Code taken from assignment 4 (more details in readme)
     colours = ["red", "orange", "yellow", "blue", "green", "#4B0082", "#8F00FF"]
     if (index === 7) {
         index = -1;
@@ -280,17 +281,19 @@ function wsSetup() {
     socket.onopen = function() {
         /**
          * use fetch to get current state of the world and then turning that response
-         * into a JSON format. We then chain that promise so when its done, we can set
-         * the current world to the response and draw the next frame.
+         * into a JSON format. Since turning it into JSON is async, we then use another
+         * promise to wait for that response. After that we update the world with that data
+         * and set counter to the amount of entities in world and drawNextFrame (suggested by
+         * Jihoon Og).
         */
          fetch("/world")
             .then((response) => {
-                return response.json()
-            }).then((response) => {
-                world = response;
-                drawNextFrame();
-            })
-        drawFrame()
+                return response.json().then((data) => {
+                                            world = data;
+                                            counter = Object.keys(world).length;
+                                            drawNextFrame();
+                                        })
+            });
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -300,13 +303,19 @@ function wsSetup() {
             // debug("WebSocket Recv:" + msg.data);
             /** 
              * We first parse the message data (which is the state of the world)
-             * to get the right format. We then set the world so we can draw that 
-             * message (current state) onto the canvas
+             * to get the right format. We then check if that state is in the world
+             * (if not we then add it, increase the counter (amount of entityies) by 1
+             * and drawNextFrame)(suggested by Jihoon Og).
             */
             var message = JSON.parse(msg.data);
             // console.log("This is my message: ",  message)
-            world = message
-            drawNextFrame()
+            for(msg in message){
+                if(world[msg] != message[msg]){
+                    world[msg] = message[msg];
+                    counter = Number(msg.split("X")[1]) + 1;
+                    drawNextFrame();
+                }
+            }
         } catch (e) {
             alert("socket on message: " + e);
         }

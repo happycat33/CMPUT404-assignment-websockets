@@ -76,9 +76,11 @@ myWorld = World()
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
-    # send a message to the client 
-    myWorld.set(entity, data)
-    return myWorld.get(entity)
+    # we use json.dump to set entity and data as a dictionary 
+    # and send that message to all clients (suggested by jihoon). 
+    msg = json.dumps({entity:data})
+    for client in clients:
+        client.put(msg)
 
 myWorld.add_set_listener( set_listener )
         
@@ -88,27 +90,20 @@ def hello():
     # Code taken from assignment 4
     return flask.send_from_directory("static", "index.html")
 
-# Code below was taken from CMPUT404 example code (from websocket lectures) +
-# suggested by Landberg (stated in readme) and some is original.
+# Code below was taken from CMPUT404 example code from websocket lectures +
+# suggested by jihoon Og (more details in readme).
 def read_ws(ws, client):
     '''A greenlet function that reads from the websocket'''
-    try:
-        while True:
-            msg = ws.receive()
-            print("WS RECV: %s" % msg)
-            if (msg is not None):
-                packet = json.loads(msg)
-                for client in clients:
-                    client.put(json.dumps(packet))
-                if("entity" in packet and "data" in packet):
-                    myWorld.space[packet["entity"]] = packet["data"]
-                    myWorld.set(packet["entity"], packet["data"])
-            else:
-                break
-    except:
-        '''Done'''
+    msg = ws.receive()
+    print("WS RECV: %s" % msg)
+    while msg:
+        packet = json.loads(msg)
+        for key, value in packet.items():
+            myWorld.set(key, value)
+        msg = ws.receive()
+    return None
 
-# Code below is taken from CMPUT404 example code (from websocket lectures)
+# Code below is taken from CMPUT404 example code from websocket lectures (more details in readme).
 @sockets.route('/subscribe')
 def subscribe_socket(ws):
     client = Client()
@@ -127,6 +122,7 @@ def subscribe_socket(ws):
     finally:
         clients.remove(client)
         gevent.kill(g)
+    return None
 
 # I give this to you, this is how you get the raw body/data portion of a post in flask
 # this should come with flask but whatever, it's not my project.
@@ -143,7 +139,7 @@ def flask_post_json():
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    # Code taken from assignment 4
+    # Code taken from assignment 4 (more details in readme)
     data = flask_post_json()
     representation = myWorld.get(entity)
     if (representation == None):
@@ -156,20 +152,20 @@ def update(entity):
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    # Code taken from assignment 4
+    # Code taken from assignment 4 (more details in readme)
     return myWorld.world()
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    # Code taken from assignment 4
+    # Code taken from assignment 4 (more details in readme)
     return myWorld.get(entity)
 
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
-    # Code taken from assignment 4
+    # Code taken from assignment 4 (more details in readme)
     myWorld.clear()
     return myWorld.world()
 
@@ -179,10 +175,5 @@ if __name__ == "__main__":
         and run
         gunicorn -k flask_sockets.worker sockets:app
     '''
-    # site this code from https://github.com/kennethreitz/flask-sockets
-    # from gevent import pywsgi
-    # from geventwebsocket.handler import WebSocketHandler
-    # server = pywsgi.WSGIServer(('', 5000), app, handler_class=WebSocketHandler)
-    # server.serve_forever()
     app.run()
     
