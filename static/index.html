@@ -284,8 +284,7 @@ function wsSetup() {
          * use fetch to get current state of the world and then turning that response
          * into a JSON format. Since turning it into JSON is async, we then use another
          * promise to wait for that response. After that we update the world with that data
-         * and set counter to the amount of entities in world and drawNextFrame (suggested by
-         * Jihoon Og).
+         * and drawNextFrame (suggested by Jihoon Og).
         */
          fetch("/world")
             .then((response) => {
@@ -305,8 +304,7 @@ function wsSetup() {
             /** 
              * We first parse the message data (which is the state of the world)
              * to get the right format. We then check if that state is in the world
-             * (if not we then add it, increase the counter (amount of entityies) by 1
-             * and drawNextFrame)(suggested by Jihoon Og).
+             * (if not we then add it, and drawNextFrame)(suggested by Jihoon Og).
             */
             var message = JSON.parse(msg.data);
             // console.log("This is my message: ",  message)

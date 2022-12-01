@@ -45,7 +45,7 @@ class World:
         # we've got listeners now!
         self.listeners = list()
         
-    def add_set_listener(self, listener):
+    def add_set_listener(self, listener):    
         self.listeners.append( listener )
 
     def update(self, entity, key, value):
@@ -74,7 +74,7 @@ class World:
 
 myWorld = World()        
 
-def set_listener( entity, data ):
+def set_listener( entity, data ):    
     ''' do something with the update ! '''
     # we use json.dump to set entity and data as a dictionary 
     # and send that message to all clients (suggested by jihoon). 
@@ -181,4 +181,3 @@ if __name__ == "__main__":
         gunicorn -k flask_sockets.worker sockets:app
     '''
     app.run()
-    
