@@ -94,14 +94,19 @@ def hello():
 # suggested by jihoon Og (more details in readme).
 def read_ws(ws, client):
     '''A greenlet function that reads from the websocket'''
-    msg = ws.receive()
-    print("WS RECV: %s" % msg)
-    while msg:
-        packet = json.loads(msg)
-        for key, value in packet.items():
-            myWorld.set(key, value)
-        msg = ws.receive()
-    return None
+    try:
+        while True:
+            msg = ws.receive()
+            print("WS RECV: %s" % msg)
+            while msg:
+                packet = json.loads(msg)
+                for key, value in packet.items():
+                    myWorld.set(key, value)
+                msg = ws.receive()
+            else:
+                return None
+    except Exception as e: 
+        print(f"Error: {e}")
 
 # Code below is taken from CMPUT404 example code from websocket lectures (more details in readme).
 @sockets.route('/subscribe')

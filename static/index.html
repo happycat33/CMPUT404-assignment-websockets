@@ -143,6 +143,7 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     socket.send(JSON.stringify(world));
+    drawNextFrame();
 }
 
 var counter = 0;
@@ -290,10 +291,10 @@ function wsSetup() {
             .then((response) => {
                 return response.json().then((data) => {
                                             world = data;
-                                            counter = Object.keys(world).length;
                                             drawNextFrame();
                                         })
             });
+        drawFrame()
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -312,7 +313,6 @@ function wsSetup() {
             for(msg in message){
                 if(world[msg] != message[msg]){
                     world[msg] = message[msg];
-                    counter = Number(msg.split("X")[1]) + 1;
                     drawNextFrame();
                 }
             }
